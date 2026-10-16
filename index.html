@@ -1,0 +1,295 @@
+<!DOCTYPE html><html lang="zh-Hant-TW"><head> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>程式設計 p5.js 簡易指令練習測驗</title> 
+  <style> 
+    * { 
+      box-sizing: border-box; 
+      font-family: Consolas, Monaco, 'Noto Sans TC', -apple-system, sans-serif;
+    } 
+
+    body { 
+      margin: 0; 
+      padding: 0; 
+      background-color: #eae0d5; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center; 
+      min-height: 100vh; 
+    } 
+
+    .container { 
+      width: 90%; 
+      max-width: 600px; 
+      text-align: center; 
+      padding: 20px 0;
+    } 
+
+    h1 { 
+      font-size: 24px; 
+      color: #222222; 
+      margin-bottom: 20px; 
+    } 
+
+    .question-box, .result-box { 
+      background-color: #d8e2dc; 
+      border: 1.5px solid #9a8c98; 
+      border-radius: 10px; 
+      padding: 25px; 
+      color: #222222; 
+      font-size: 20px; 
+      font-weight: bold; 
+      text-align: left; 
+      line-height: 1.6; 
+      margin-bottom: 25px; 
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+    } 
+
+    .result-box {
+      text-align: center;
+      padding: 40px 25px;
+    }
+
+    .result-score {
+      font-size: 32px;
+      color: #4a4e69;
+      margin: 15px 0;
+    }
+
+    .result-comment {
+      font-size: 24px;
+      color: #222222;
+      margin-bottom: 20px;
+    } 
+
+    .option-btn { 
+      width: 100%; 
+      background-color: #ffffff; 
+      border: 2px solid #9a8c98; 
+      border-radius: 8px; 
+      padding: 12px; 
+      margin-bottom: 15px; 
+      font-size: 18px; 
+      color: #222222;
+      text-align: left;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.2s, border-color 0.2s;
+    } 
+
+    .option-btn:hover {
+      background-color: #f0f0f0;
+      border-color: #222222;
+    } 
+
+    .disable-click {
+      pointer-events: none;
+    }
+
+    .btn-correct {
+      background-color: #a7c957 !important;
+      border-color: #386641 !important;
+      color: #1b4332 !important;
+    }
+
+    .btn-wrong {
+      background-color: #f28482 !important;
+      border-color: #e63946 !important;
+      color: #7c1113 !important;
+    }
+
+    .shake-vertical {
+      animation: shakeY 0.4s ease-in-out;
+    }
+    @keyframes shakeY {
+      0%, 100% { transform: translateY(0); }
+      25% { transform: translateY(-8px); }
+      75% { transform: translateY(8px); }
+    }
+
+    .shake-horizontal {
+      animation: shakeX 0.4s ease-in-out;
+    }
+    @keyframes shakeX {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+
+    .next-container {
+      margin-top: 10px;
+      min-height: 50px;
+    }
+
+    .next-btn {
+      background-color: #4a4e69;
+      color: white;
+      border: none;
+      padding: 12px 40px;
+      border-radius: 8px;
+      font-size: 18px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .next-btn:hover {
+      background-color: #222222;
+    }
+
+    .status-panel {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      font-size: 14px;
+      color: #666;
+    }
+  </style> 
+</head>
+<body>
+
+  <div class="container">
+    <h1>程式設計 p5.js 簡易指令練習測驗</h1>
+    
+    <div id="quiz-app">
+      <div class="status-panel" id="status-panel">
+        <div id="progress-text">正在載入題庫...</div>
+        <div id="score-text">目前分數: 0</div>
+      </div>
+      
+      <div id="quiz-content-area">
+        <div id="question-container">
+          <div class="question-box" id="question-text">請稍候...</div>
+          <div id="options-container"></div>
+        </div>
+        <div class="next-container" id="next-button-area"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 📝 15 題完整最新題庫（清空潛在語法與連結衝突）
+    var allQuestions = [
+      {"id": 1, "question": "在 p5.js 中，哪一個功能只會在程式啟動時執行一次，常用來設定畫布大小？", "options": ["draw()", "setup()", "createCanvas()", "preload()"], "answer": 1},
+      {"id": 2, "question": "若要建立一個寬度 800、高度 600 像素的畫布，應該使用哪一個指令？", "options": ["createCanvas(800, 600)", "size(800, 600)", "windowSize(800, 600)", "background(800, 600)"], "answer": 0},
+      {"id": 3, "question": "哪一個內建函式會不斷重複執行，適合用來製作動畫效果？", "options": ["setup()", "loop()", "draw()", "paint()"], "answer": 2},
+      {"id": 4, "question": "要在畫布上畫一個圓形，可以使用哪一個指令？", "options": ["rect()", "circle()", "line()", "triangle()"], "answer": 1},
+      {"id": 5, "question": "指令 rect(x, y, w, h) 中的前兩個參數 x 和 y 預設代表矩形的什麼位置？", "options": ["中心點", "右下角", "左上角", "left角"], "answer": 2},
+      {"id": 6, "question": "如果要改變填滿圖形的顏色，應該在畫出圖形前使用哪一個指令？", "options": ["stroke()", "fill()", "background()", "color()"], "answer": 1},
+      {"id": 7, "question": "如果不想要讓圖形有邊框線，應該使用哪一個指令？", "options": ["noStroke()", "noFill()", "strokeWeight(0)", "clearStroke()"], "answer": 0},
+      {"id": 8, "question": "p5.js 中用來取得滑鼠目前 X 座標的內建變數是哪一個？", "options": ["mouseX", "mouse_x", "getX()", "Xmouse"], "answer": 0},
+      {"id": 9, "question": "如果要設定畫布的背景顏色，應該使用哪一個指令？", "options": ["fill()", "clear()", "background()", "canvasColor()"], "answer": 2},
+      {"id": 10, "question": "指令 line(x1, y1, x2, y2) 需要傳入幾個參數才能畫出一條線？", "options": ["2個", "3個", "4個", "5個"], "answer": 2},
+      {"id": 11, "question": "若想改變圖形邊框線的粗細，應該使用哪一個指令？", "options": ["strokeWidth()", "strokeWeight()", "lineSize()", "border()"], "answer": 1},
+      {"id": 12, "question": "p5.js 內建儲存畫布高度的變數名稱是什麼？", "options": ["width", "windowHeight", "height", "canvasHeight"], "answer": 2},
+      {"id": 13, "question": "要在畫布上顯示文字，應該使用哪一個指令？", "options": ["text()", "print()", "show()", "drawText()"], "answer": 0},
+      {"id": 14, "question": "如果想要在繪製下一個圖形時不填滿任何顏色，應該使用什麼指令？", "options": ["noColor()", "noFill()", "clearFill()", "transparent()"], "answer": 1},
+      {"id": 15, "question": "利用隨機函數讓數值在 10 到 50 之間變化，正確的寫法是？", "options": ["random(10, 50)", "random(50)", "randint(10, 50)", "chance(10, 50)"], "answer": 0}
+    ];
+
+    var currentQuizSet = []; 
+    var currentQuestionIndex = 0;
+    var userScore = 0;
+
+    window.addEventListener('DOMContentLoaded', function() {
+      startNewQuiz();
+    });
+
+    function startNewQuiz() {
+      currentQuestionIndex = 0;
+      userScore = 0;
+      
+      var shuffled = allQuestions.slice();
+      for (var i = shuffled.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = shuffled[i];
+        shuffled[i] = shuffled[j];
+        shuffled[j] = temp;
+      }
+      
+      var quizLength = Math.min(5, shuffled.length);
+      currentQuizSet = shuffled.slice(0, quizLength);
+      document.getElementById('status-panel').style.display = 'flex';
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      var qData = currentQuizSet[currentQuestionIndex];
+      
+      document.getElementById('progress-text').innerText = "第 " + (currentQuestionIndex + 1) + " 題 / 共 " + currentQuizSet.length + " 題";
+      document.getElementById('score-text').innerText = "目前分數: " + userScore;
+      
+      var mainContent = document.getElementById('quiz-content-area');
+      mainContent.innerHTML = '<div id="question-container"><div class="question-box" id="question-text"></div><div id="options-container"></div></div><div class="next-container" id="next-button-area"></div>';
+
+      document.getElementById('question-text').innerText = (currentQuestionIndex + 1) + ". " + qData.question;
+      var optionsContainer = document.getElementById('options-container');
+      
+      qData.options.forEach(function(optionText, index) {
+        var btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = optionText;
+        
+        btn.onclick = function() {
+          handleAnswer(btn, index, qData.answer);
+        };
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(selectedBtn, selectedIndex, correctIndex) {
+      var options = document.querySelectorAll('.option-btn');
+      
+      options.forEach(function(btn) {
+        btn.classList.add('disable-click');
+      });
+
+      if (selectedIndex === correctIndex) {
+        selectedBtn.classList.add('btn-correct', 'shake-vertical');
+        userScore += 20;
+        document.getElementById('score-text').innerText = "目前分數: " + userScore;
+      } else {
+        selectedBtn.classList.add('btn-wrong', 'shake-horizontal');
+        options[correctIndex].classList.add('btn-correct');
+      }
+
+      var nextArea = document.getElementById('next-button-area');
+      var nextBtn = document.createElement('button');
+      nextBtn.className = 'next-btn';
+
+      if (currentQuestionIndex < currentQuizSet.length - 1) {
+        nextBtn.innerText = '下一題';
+        nextBtn.onclick = function() {
+          currentQuestionIndex++;
+          renderQuestion();
+        };
+      } else {
+        nextBtn.innerText = '查看結算結果';
+        nextBtn.onclick = function() {
+          showFinalResult();
+        };
+      }
+      nextArea.appendChild(nextBtn);
+    }
+
+    function showFinalResult() {
+      document.getElementById('status-panel').style.display = 'none';
+      
+      var mainContent = document.getElementById('quiz-content-area');
+      var comment = "";
+      
+      if (userScore === 100) {
+        comment = "太厲害了！你完全掌握了 p5.js 的基礎指令！🏆";
+      } else if (userScore >= 60) {
+        comment = "做得好！概念很清晰，繼續保持！👍";
+      } else {
+        comment = "再接再厲！重新複習一下指令會更好喔！💪";
+      }
+
+      mainContent.innerHTML = '<div class="result-box"><h2>測驗結束</h2><div class="result-score">最終得分: ' + userScore + ' 分</div><div class="result-comment">' + comment + '</div><button class="next-btn" onclick="startNewQuiz()">重新挑戰</button></div>';
+    }
+  </script>
+</body>
+</html>
+
+
